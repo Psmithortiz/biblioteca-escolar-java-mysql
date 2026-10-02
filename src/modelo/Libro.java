@@ -17,7 +17,11 @@ public class Libro extends Entidad {
     private final int stock;
     private final int idCategoria;
 
-    /** @throws IllegalArgumentException si algún dato es inválido. */
+    /**
+     * Crea un libro nuevo, sin id.
+     *
+     * @throws IllegalArgumentException si algún dato es inválido.
+     */
     public Libro(String titulo, String autor, String isbn, String editorial, int stock, int idCategoria) {
         Validador.cadenaNoVacia(titulo, "título");
         Validador.largoMaximo(titulo.strip(), LARGO_MAXIMO_TITULO, "título");
@@ -35,6 +39,16 @@ public class Libro extends Entidad {
         this.editorial = editorial.strip();
         this.stock = stock;
         this.idCategoria = idCategoria;
+    }
+
+    /**
+     * Reconstruye un libro ya guardado, con su id.
+     *
+     * @throws IllegalArgumentException si el id o algún dato es inválido.
+     */
+    public Libro(int id, String titulo, String autor, String isbn, String editorial, int stock, int idCategoria) {
+        this(titulo, autor, isbn, editorial, stock, idCategoria);
+        asignarId(id);
     }
 
     public String getTitulo() {

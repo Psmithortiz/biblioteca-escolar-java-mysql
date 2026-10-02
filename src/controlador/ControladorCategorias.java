@@ -45,9 +45,7 @@ public class ControladorCategorias {
      */
     public boolean actualizarCategoria(Categoria actual, String nuevoNombre) {
         Validador.objetoNoNulo(actual, "categoría");
-        Categoria actualizada = new Categoria(nuevoNombre);
-        actualizada.asignarId(actual.getId());
-        return categoriaDAO.update(actualizada);
+        return categoriaDAO.update(new Categoria(actual.getId(), nuevoNombre));
     }
 
     /**

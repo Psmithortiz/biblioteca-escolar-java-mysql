@@ -54,9 +54,7 @@ public class ControladorEstudiantes {
      */
     public boolean actualizarEstudiante(Estudiante actual, String nombre, String curso, String correo) {
         Validador.objetoNoNulo(actual, "estudiante");
-        Estudiante actualizado = new Estudiante(nombre, actual.getRut(), curso, correo);
-        actualizado.asignarId(actual.getId());
-        return estudianteDAO.update(actualizado);
+        return estudianteDAO.update(new Estudiante(actual.getId(), nombre, actual.getRut(), curso, correo));
     }
 
     /**

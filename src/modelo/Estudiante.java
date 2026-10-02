@@ -15,6 +15,8 @@ public class Estudiante extends Entidad {
     private final String correo;
 
     /**
+     * Crea un estudiante nuevo, sin id.
+     *
      * @param curso opcional: {@code null} o en blanco se guarda como {@code null}.
      * @throws IllegalArgumentException si algún dato es inválido.
      */
@@ -29,6 +31,16 @@ public class Estudiante extends Entidad {
         this.rut = rut;
         this.curso = (curso == null || curso.isBlank()) ? null : curso.strip();
         this.correo = correo;
+    }
+
+    /**
+     * Reconstruye un estudiante ya guardado, con su id.
+     *
+     * @throws IllegalArgumentException si el id o algún dato es inválido.
+     */
+    public Estudiante(int id, String nombre, String rut, String curso, String correo) {
+        this(nombre, rut, curso, correo);
+        asignarId(id);
     }
 
     public String getNombre() {

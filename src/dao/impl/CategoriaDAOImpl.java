@@ -99,8 +99,6 @@ public class CategoriaDAOImpl implements CategoriaDAO {
 
     /** Convierte la fila actual del {@link ResultSet} en una {@link Categoria} con su id. */
     private Categoria mapear(ResultSet fila) throws SQLException {
-        Categoria categoria = new Categoria(fila.getString("nombre"));
-        categoria.asignarId(fila.getInt("id"));
-        return categoria;
+        return new Categoria(fila.getInt("id"), fila.getString("nombre"));
     }
 }

@@ -53,9 +53,8 @@ public class ControladorLibros {
                                    String editorial, int idCategoria) {
         Validador.objetoNoNulo(actual, "libro");
         // El stock se copia solo para construir un libro válido: el DAO no lo guarda.
-        Libro actualizado = new Libro(titulo, autor, isbn, editorial, actual.getStock(), idCategoria);
-        actualizado.asignarId(actual.getId());
-        return libroDAO.update(actualizado);
+        return libroDAO.update(
+                new Libro(actual.getId(), titulo, autor, isbn, editorial, actual.getStock(), idCategoria));
     }
 
     /**

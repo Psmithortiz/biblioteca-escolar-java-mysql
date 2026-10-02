@@ -126,12 +126,11 @@ public class EstudianteDAOImpl implements EstudianteDAO {
 
     /** Convierte la fila actual del {@link ResultSet} en un {@link Estudiante} con su id. */
     private Estudiante mapear(ResultSet fila) throws SQLException {
-        Estudiante estudiante = new Estudiante(
+        return new Estudiante(
+                fila.getInt("id"),
                 fila.getString("nombre"),
                 fila.getString("rut"),
                 fila.getString("curso"),
                 fila.getString("correo"));
-        estudiante.asignarId(fila.getInt("id"));
-        return estudiante;
     }
 }

@@ -5,7 +5,11 @@ import modelo.Libro;
 import utils.DatabaseConnection;
 import utils.Validador;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -163,14 +167,13 @@ public class LibroDAOImpl implements LibroDAO {
 
     /** Convierte la fila actual del {@link ResultSet} en un {@link Libro} con su id. */
     private Libro mapear(ResultSet fila) throws SQLException {
-        Libro libro = new Libro(
+        return new Libro(
+                fila.getInt("id"),
                 fila.getString("titulo"),
                 fila.getString("autor"),
                 fila.getString("isbn"),
                 fila.getString("editorial"),
                 fila.getInt("stock"),
                 fila.getInt("id_categoria"));
-        libro.asignarId(fila.getInt("id"));
-        return libro;
     }
 }
