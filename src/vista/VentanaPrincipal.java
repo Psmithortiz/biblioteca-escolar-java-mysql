@@ -1,20 +1,17 @@
 package vista;
 
 import controlador.ControladorCategorias;
+import controlador.ControladorEstudiantes;
 import controlador.ControladorLibros;
 import dao.impl.CategoriaDAOImpl;
+import dao.impl.EstudianteDAOImpl;
 import dao.impl.LibroDAOImpl;
 import modelo.Permiso;
 import modelo.Usuario;
 import utils.Validador;
 
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -34,6 +31,7 @@ public class VentanaPrincipal extends JFrame {
 
     private final ControladorCategorias controladorCategorias = new ControladorCategorias(new CategoriaDAOImpl());
     private final ControladorLibros controladorLibros = new ControladorLibros(new LibroDAOImpl());
+    private final ControladorEstudiantes controladorEstudiantes = new ControladorEstudiantes(new EstudianteDAOImpl());
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
@@ -114,6 +112,7 @@ public class VentanaPrincipal extends JFrame {
     private Pantalla crearPantalla(Permiso permiso) {
         return switch (permiso) {
             case GESTIONAR_LIBROS -> new PantallaLibros(controladorLibros, controladorCategorias);
+            case GESTIONAR_ESTUDIANTES -> new PantallaEstudiantes(controladorEstudiantes);
             case GESTIONAR_CATEGORIAS -> new PantallaCategorias(controladorCategorias);
             default -> new PantallaProvisoria(texto(permiso)); // temporal, hasta tener las demás
         };
