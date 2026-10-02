@@ -1,7 +1,9 @@
 package vista;
 
 import controlador.ControladorCategorias;
+import controlador.ControladorLibros;
 import dao.impl.CategoriaDAOImpl;
+import dao.impl.LibroDAOImpl;
 import modelo.Permiso;
 import modelo.Usuario;
 import utils.Validador;
@@ -31,6 +33,7 @@ public class VentanaPrincipal extends JFrame {
     private final SesionListener sesionListener;
 
     private final ControladorCategorias controladorCategorias = new ControladorCategorias(new CategoriaDAOImpl());
+    private final ControladorLibros controladorLibros = new ControladorLibros(new LibroDAOImpl());
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
@@ -110,6 +113,7 @@ public class VentanaPrincipal extends JFrame {
     /** Pantalla que corresponde a cada permiso. */
     private Pantalla crearPantalla(Permiso permiso) {
         return switch (permiso) {
+            case GESTIONAR_LIBROS -> new PantallaLibros(controladorLibros, controladorCategorias);
             case GESTIONAR_CATEGORIAS -> new PantallaCategorias(controladorCategorias);
             default -> new PantallaProvisoria(texto(permiso)); // temporal, hasta tener las demás
         };
