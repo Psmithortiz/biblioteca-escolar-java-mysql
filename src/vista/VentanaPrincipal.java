@@ -3,9 +3,11 @@ package vista;
 import controlador.ControladorCategorias;
 import controlador.ControladorEstudiantes;
 import controlador.ControladorLibros;
+import controlador.ControladorPrestamos;
 import dao.impl.CategoriaDAOImpl;
 import dao.impl.EstudianteDAOImpl;
 import dao.impl.LibroDAOImpl;
+import dao.impl.PrestamoDAOImpl;
 import modelo.Permiso;
 import modelo.Usuario;
 import utils.Validador;
@@ -32,6 +34,7 @@ public class VentanaPrincipal extends JFrame {
     private final ControladorCategorias controladorCategorias = new ControladorCategorias(new CategoriaDAOImpl());
     private final ControladorLibros controladorLibros = new ControladorLibros(new LibroDAOImpl());
     private final ControladorEstudiantes controladorEstudiantes = new ControladorEstudiantes(new EstudianteDAOImpl());
+    private final ControladorPrestamos controladorPrestamos = new ControladorPrestamos(new PrestamoDAOImpl());
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
@@ -114,6 +117,8 @@ public class VentanaPrincipal extends JFrame {
             case GESTIONAR_LIBROS -> new PantallaLibros(controladorLibros, controladorCategorias);
             case GESTIONAR_ESTUDIANTES -> new PantallaEstudiantes(controladorEstudiantes);
             case GESTIONAR_CATEGORIAS -> new PantallaCategorias(controladorCategorias);
+            case GESTIONAR_PRESTAMOS ->
+                    new PantallaPrestamos(controladorPrestamos, controladorEstudiantes, controladorLibros);
             default -> new PantallaProvisoria(texto(permiso)); // temporal, hasta tener las demás
         };
     }
