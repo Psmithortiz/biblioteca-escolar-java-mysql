@@ -1,0 +1,4 @@
+# Copia este archivo como db.properties y completa tus credenciales de MySQL.
+db.url=jdbc:mysql://localhost:3306/biblioteca
+db.usuario=root
+db.password=
