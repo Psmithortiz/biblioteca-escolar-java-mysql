@@ -40,6 +40,20 @@ public final class Validador {
         }
     }
 
+    /** @throws IllegalArgumentException si el valor no es mayor que cero. */
+    public static void positivo(int valor, String campo) {
+        if (valor <= 0) {
+            throw new IllegalArgumentException("El campo '" + campo + "' debe ser mayor que cero.");
+        }
+    }
+
+    /** @throws IllegalArgumentException si el valor es negativo. */
+    public static void noNegativo(int valor, String campo) {
+        if (valor < 0) {
+            throw new IllegalArgumentException("El campo '" + campo + "' no puede ser negativo.");
+        }
+    }
+
     /** @throws IllegalArgumentException si el RUT no tiene el formato 12345678-9 (sin puntos, con guion). */
     public static void formatoRut(String rut, String campo) {
         if (rut == null || !FORMATO_RUT.matcher(rut).matches()) {
