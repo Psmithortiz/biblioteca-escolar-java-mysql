@@ -21,7 +21,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -32,8 +31,6 @@ import java.util.List;
 public class PantallaPrestamos extends Pantalla {
 
     private static final String[] COLUMNAS = {"ID", "Estudiante", "RUT", "Libro", "Prestado", "Vence", "Devuelto", "Estado"};
-    private static final String SIN_DATO = "—";
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private static final int ANCHO_COLUMNA_ID = 50;
 
     private final ControladorPrestamos controladorPrestamos;
@@ -105,26 +102,13 @@ public class PantallaPrestamos extends Pantalla {
                     detalle.nombreEstudiante(),
                     detalle.rutEstudiante(),
                     detalle.tituloLibro(),
-                    formatear(prestamo.getFechaPrestamo()),
-                    formatear(prestamo.getFechaVencimiento()),
-                    formatear(prestamo.getFechaDevolucionReal()),
-                    estado(prestamo, hoy)
+                    Formatos.fecha(prestamo.getFechaPrestamo()),
+                    Formatos.fecha(prestamo.getFechaVencimiento()),
+                    Formatos.fecha(prestamo.getFechaDevolucionReal()),
+                    Formatos.estado(prestamo, hoy)
             });
         }
         actualizarBotones();
-    }
-
-    /** @return el estado en palabras, con los días de atraso si los hay. */
-    private static String estado(Prestamo prestamo, LocalDate hoy) {
-        long atraso = prestamo.diasAtraso(hoy);
-        if (prestamo.estaDevuelto()) {
-            return atraso > 0 ? "Devuelto con " + atraso + " día(s) de atraso" : "Devuelto a tiempo";
-        }
-        return atraso > 0 ? "Atrasado " + atraso + " día(s)" : "Prestado";
-    }
-
-    private static String formatear(LocalDate fecha) {
-        return (fecha == null) ? SIN_DATO : fecha.format(FORMATO_FECHA);
     }
 
     /** @return el préstamo de la fila seleccionada, o {@code null} si no hay selección. */

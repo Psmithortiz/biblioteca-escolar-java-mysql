@@ -12,8 +12,13 @@ import modelo.Permiso;
 import modelo.Usuario;
 import utils.Validador;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -113,13 +118,17 @@ public class VentanaPrincipal extends JFrame {
 
     /** Pantalla que corresponde a cada permiso. */
     private Pantalla crearPantalla(Permiso permiso) {
+        // Sin default: si se agrega un permiso nuevo, el compilador exige darle su pantalla.
         return switch (permiso) {
             case GESTIONAR_LIBROS -> new PantallaLibros(controladorLibros, controladorCategorias);
             case GESTIONAR_ESTUDIANTES -> new PantallaEstudiantes(controladorEstudiantes);
             case GESTIONAR_CATEGORIAS -> new PantallaCategorias(controladorCategorias);
             case GESTIONAR_PRESTAMOS ->
                     new PantallaPrestamos(controladorPrestamos, controladorEstudiantes, controladorLibros);
-            default -> new PantallaProvisoria(texto(permiso)); // temporal, hasta tener las demás
+            case VER_REPORTES -> new PantallaReportes(controladorPrestamos, controladorEstudiantes);
+            case CONSULTAR_CATALOGO -> new PantallaCatalogo(controladorLibros, controladorCategorias);
+            case VER_HISTORIAL_PROPIO ->
+                    new PantallaMiHistorial(usuario, controladorEstudiantes, controladorPrestamos);
         };
     }
 
