@@ -50,6 +50,7 @@ public class PantallaPrestamos extends Pantalla {
     private final JCheckBox checkDevueltos = new JCheckBox("Incluir devueltos");
     private final JButton botonNuevo = new JButton("Nuevo préstamo");
     private final JButton botonDevolver = new JButton("Registrar devolución");
+    private final JButton botonSimular = new JButton("Simular préstamos simultáneos");
 
     /** Préstamos en el mismo orden que las filas de la tabla. */
     private List<PrestamoDetalle> detalles = List.of();
@@ -74,9 +75,11 @@ public class PantallaPrestamos extends Pantalla {
 
         botonNuevo.addActionListener(e -> nuevo());
         botonDevolver.addActionListener(e -> devolver());
+        botonSimular.addActionListener(e -> simular());
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, MARGEN, 0));
         botones.add(botonNuevo);
         botones.add(botonDevolver);
+        botones.add(botonSimular);
 
         add(filtros, BorderLayout.NORTH);
         add(new JScrollPane(tabla), BorderLayout.CENTER);
@@ -148,6 +151,21 @@ public class PantallaPrestamos extends Pantalla {
             return;
         }
         new DialogoPrestamo(ventana(), controladorPrestamos, estudiantes, libros, this::refrescar).setVisible(true);
+    }
+
+    /** Carga estudiantes y libros vigentes y abre la simulación de préstamos simultáneos. */
+    private void simular() {
+        List<Estudiante> estudiantes;
+        List<Libro> libros;
+        try {
+            estudiantes = controladorEstudiantes.verEstudiantes();
+            libros = controladorLibros.buscarLibros(null, null);
+        } catch (PersistenciaException e) {
+            Dialogos.errorBaseDatos(this, e);
+            return;
+        }
+        new DialogoSimulacion(ventana(), controladorPrestamos, controladorLibros, estudiantes, libros,
+                this::refrescar).setVisible(true);
     }
 
     /** Pide confirmación y registra la devolución con fecha de hoy, informando el atraso. */

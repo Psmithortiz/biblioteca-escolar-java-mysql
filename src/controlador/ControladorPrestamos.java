@@ -4,16 +4,21 @@ import dao.PrestamoDAO;
 import modelo.LibroPrestamos;
 import modelo.Prestamo;
 import modelo.PrestamoDetalle;
+import modelo.ResultadoSimulacion;
 import utils.Validador;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Registra préstamos y devoluciones, y entrega el historial y los reportes, a través de
  * {@link PrestamoDAO}. La fecha de préstamo y la de devolución son siempre la de hoy.
  */
 public class ControladorPrestamos {
+
+    private static final int SEGUNDOS_ESPERA_SIMULACION = 30;
 
     private final PrestamoDAO prestamoDAO;
 
@@ -70,5 +75,76 @@ public class ControladorPrestamos {
     /** @return los libros con su cantidad de préstamos, del más prestado al menos prestado. */
     public List<LibroPrestamos> verLibrosMasPrestados() {
         return prestamoDAO.librosMasPrestados();
+    }
+
+    /**
+     * Lanza varias solicitudes de préstamo del mismo libro al mismo tiempo, cada una en su
+     * propio hilo, para comprobar que el stock nunca se descuenta de más. Una barrera
+     * ({@link CountDownLatch}) hace que todos los hilos partan juntos. Registra préstamos reales.
+     *
+     * @param idsEstudiantes estudiantes a quienes se asignan las solicitudes, en orden circular.
+     * @return cuántas se aprobaron, cuántas se rechazaron por falta de stock y cuántas fallaron.
+     * @throws IllegalArgumentException si no hay estudiantes o la cantidad no es positiva.
+     * @throws InterruptedException     si el hilo que espera la simulación es interrumpido.
+     */
+    public ResultadoSimulacion simularPrestamosSimultaneos(int idLibro, List<Integer> idsEstudiantes,
+                                                           int solicitudes) throws InterruptedException {
+        Validador.positivo(solicitudes, "solicitudes");
+        Validador.objetoNoNulo(idsEstudiantes, "estudiantes");
+        if (idsEstudiantes.isEmpty()) {
+            throw new IllegalArgumentException("Se necesita al menos un estudiante para simular.");
+        }
+        CountDownLatch largada = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(solicitudes);
+        try {
+            List<Future<Intento>> futuros = new ArrayList<>();
+            for (int i = 0; i < solicitudes; i++) {
+                int idEstudiante = idsEstudiantes.get(i % idsEstudiantes.size());
+                futuros.add(executor.submit(solicitud(idEstudiante, idLibro, largada)));
+            }
+            largada.countDown(); // todos los hilos parten a la vez
+            return contar(futuros);
+        } finally {
+            executor.shutdown();
+            if (!executor.awaitTermination(SEGUNDOS_ESPERA_SIMULACION, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        }
+    }
+
+    /** Resultado de una solicitud: qué hilo la atendió y el préstamo obtenido ({@code null} = sin stock). */
+    private record Intento(String hilo, Prestamo prestamo) {
+    }
+
+    /** Una solicitud: espera la largada y pide el préstamo. */
+    private Callable<Intento> solicitud(int idEstudiante, int idLibro, CountDownLatch largada) {
+        return () -> {
+            largada.await();
+            return new Intento(Thread.currentThread().getName(), registrarPrestamo(idEstudiante, idLibro));
+        };
+    }
+
+    /** Espera cada solicitud y clasifica su resultado. */
+    private ResultadoSimulacion contar(List<Future<Intento>> futuros) throws InterruptedException {
+        int aprobados = 0;
+        int rechazados = 0;
+        int errores = 0;
+        List<String> registro = new ArrayList<>();
+        for (Future<Intento> futuro : futuros) {
+            try {
+                Intento intento = futuro.get();
+                if (intento.prestamo() != null) {
+                    aprobados++;
+                    registro.add(intento.hilo() + " → aprobado (préstamo #" + intento.prestamo().getId() + ")");
+                } else {
+                    rechazados++;
+                    registro.add(intento.hilo() + " → rechazado: sin stock");
+                }
+            } catch (ExecutionException e) {
+                errores++;
+                registro.add("error: " + e.getCause().getMessage());
+            }
+        }
+        return new ResultadoSimulacion(futuros.size(), aprobados, rechazados, errores, registro);
     }
 }
