@@ -30,7 +30,7 @@ import java.util.Map;
 public class VentanaPrincipal extends JFrame {
 
     private static final String TITULO = "Biblioteca Escolar";
-    private static final int ANCHO = 1000;
+    private static final int ANCHO = 1400;
     private static final int ALTO = 560;
 
     private final Usuario usuario;
