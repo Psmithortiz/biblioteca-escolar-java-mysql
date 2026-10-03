@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementación JDBC de {@link CategoriaDAO} sobre la tabla {@code categorias}.
@@ -26,6 +27,12 @@ public class CategoriaDAOImpl implements CategoriaDAO {
     private static final String SQL_ACTUALIZAR = "UPDATE categorias SET nombre = ? WHERE id = ?";
 
     private static final String SQL_ELIMINAR = "DELETE FROM categorias WHERE id = ?";
+
+    /** Textos para el usuario según el error, al guardar y al eliminar. */
+    private static final Map<Integer, String> SI_FALLA_GUARDAR =
+            Map.of(ErroresSql.DUPLICADO, "Ya existe una categoría con ese nombre.");
+    private static final Map<Integer, String> SI_FALLA_ELIMINAR =
+            Map.of(ErroresSql.FILA_REFERENCIADA, "Tiene libros asociados: cámbialos de categoría o elimínalos primero.");
 
     private final DatabaseConnection db = DatabaseConnection.getInstance();
 
@@ -44,7 +51,7 @@ public class CategoriaDAOImpl implements CategoriaDAO {
 
                 categoria.asignarId(UtilJdbc.leerIdGenerado(sentencia));
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo guardar la categoría.", e);
+                throw ErroresSql.traducir("No se pudo guardar la categoría.", e, SI_FALLA_GUARDAR);
             }
         }
     }
@@ -79,7 +86,7 @@ public class CategoriaDAOImpl implements CategoriaDAO {
                 sentencia.setInt(2, categoria.getId());
                 return sentencia.executeUpdate() > 0; // 0 filas afectadas = no existe ese id
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo actualizar la categoría.", e);
+                throw ErroresSql.traducir("No se pudo actualizar la categoría.", e, SI_FALLA_GUARDAR);
             }
         }
     }
@@ -92,7 +99,7 @@ public class CategoriaDAOImpl implements CategoriaDAO {
                 sentencia.setInt(1, id);
                 return sentencia.executeUpdate() > 0; // 0 filas afectadas = no existía
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo eliminar la categoría.", e);
+                throw ErroresSql.traducir("No se pudo eliminar la categoría.", e, SI_FALLA_ELIMINAR);
             }
         }
     }

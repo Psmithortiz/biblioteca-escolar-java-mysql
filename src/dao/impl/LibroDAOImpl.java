@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementación JDBC de {@link LibroDAO} sobre la tabla {@code libros}.
@@ -45,6 +46,13 @@ public class LibroDAOImpl implements LibroDAO {
 
     private static final String SQL_ELIMINAR = "DELETE FROM libros WHERE id = ?";
 
+    /** Textos para el usuario según el error, al guardar y al eliminar. */
+    private static final Map<Integer, String> SI_FALLA_GUARDAR = Map.of(
+            ErroresSql.DUPLICADO, "Ya existe un libro con ese ISBN.",
+            ErroresSql.REFERENCIA_INEXISTENTE, "La categoría elegida ya no existe.");
+    private static final Map<Integer, String> SI_FALLA_ELIMINAR =
+            Map.of(ErroresSql.FILA_REFERENCIADA, "Tiene préstamos registrados: se conserva para no perder el historial.");
+
     private final DatabaseConnection db = DatabaseConnection.getInstance();
 
     @Override
@@ -67,7 +75,7 @@ public class LibroDAOImpl implements LibroDAO {
 
                 libro.asignarId(UtilJdbc.leerIdGenerado(sentencia));
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo guardar el libro.", e);
+                throw ErroresSql.traducir("No se pudo guardar el libro.", e, SI_FALLA_GUARDAR);
             }
         }
     }
@@ -118,7 +126,7 @@ public class LibroDAOImpl implements LibroDAO {
                 sentencia.setInt(6, libro.getId());
                 return sentencia.executeUpdate() > 0; // 0 filas afectadas = no existe ese id
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo actualizar el libro.", e);
+                throw ErroresSql.traducir("No se pudo actualizar el libro.", e, SI_FALLA_GUARDAR);
             }
         }
     }
@@ -149,7 +157,7 @@ public class LibroDAOImpl implements LibroDAO {
                 sentencia.setInt(1, id);
                 return sentencia.executeUpdate() > 0; // 0 filas afectadas = no existía
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo eliminar el libro.", e);
+                throw ErroresSql.traducir("No se pudo eliminar el libro.", e, SI_FALLA_ELIMINAR);
             }
         }
     }

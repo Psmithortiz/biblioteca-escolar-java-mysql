@@ -13,4 +13,12 @@ public class PersistenciaException extends RuntimeException {
     public PersistenciaException(String mensaje, Throwable causa) {
         super(mensaje, causa);
     }
+
+    /**
+     * @return {@code true} si es una falla técnica (servidor detenido, credenciales, SQL inesperado);
+     *         las subclases que representan reglas de los datos devuelven {@code false}.
+     */
+    public boolean esFallaTecnica() {
+        return true;
+    }
 }

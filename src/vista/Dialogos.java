@@ -32,8 +32,16 @@ final class Dialogos {
         JOptionPane.showMessageDialog(padre, mensaje, TITULO_OPERACION_NO_PERMITIDA, JOptionPane.WARNING_MESSAGE);
     }
 
-    /** Falló la base de datos: el mensaje va al usuario y la traza completa queda en la consola. */
+    /**
+     * Falló la base de datos. Si la BD rechazó los datos por una regla (duplicado, registros
+     * asociados), se muestra como advertencia; si es una falla técnica, como error, y la traza
+     * completa queda en la consola.
+     */
     static void errorBaseDatos(Component padre, PersistenciaException e) {
+        if (!e.esFallaTecnica()) {
+            operacionNoPermitida(padre, e.getMessage());
+            return;
+        }
         e.printStackTrace();
         JOptionPane.showMessageDialog(padre, e.getMessage(), TITULO_ERROR_BD, JOptionPane.ERROR_MESSAGE);
     }

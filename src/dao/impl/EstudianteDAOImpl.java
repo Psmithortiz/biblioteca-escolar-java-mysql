@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementación JDBC de {@link EstudianteDAO} sobre la tabla {@code estudiantes}.
@@ -34,6 +35,12 @@ public class EstudianteDAOImpl implements EstudianteDAO {
 
     private static final String SQL_ELIMINAR = "DELETE FROM estudiantes WHERE id = ?";
 
+    /** Textos para el usuario según el error, al guardar y al eliminar. */
+    private static final Map<Integer, String> SI_FALLA_GUARDAR =
+            Map.of(ErroresSql.DUPLICADO, "Ya existe un estudiante con ese RUT.");
+    private static final Map<Integer, String> SI_FALLA_ELIMINAR =
+            Map.of(ErroresSql.FILA_REFERENCIADA, "Tiene préstamos registrados: se conserva para no perder su historial.");
+
     private final DatabaseConnection db = DatabaseConnection.getInstance();
 
     @Override
@@ -54,7 +61,7 @@ public class EstudianteDAOImpl implements EstudianteDAO {
 
                 estudiante.asignarId(UtilJdbc.leerIdGenerado(sentencia));
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo guardar el estudiante.", e);
+                throw ErroresSql.traducir("No se pudo guardar el estudiante.", e, SI_FALLA_GUARDAR);
             }
         }
     }
@@ -119,7 +126,7 @@ public class EstudianteDAOImpl implements EstudianteDAO {
                 sentencia.setInt(1, id);
                 return sentencia.executeUpdate() > 0; // 0 filas afectadas = no existía
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo eliminar el estudiante.", e);
+                throw ErroresSql.traducir("No se pudo eliminar el estudiante.", e, SI_FALLA_ELIMINAR);
             }
         }
     }

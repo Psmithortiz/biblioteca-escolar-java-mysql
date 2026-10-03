@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementación JDBC de {@link PrestamoDAO}. Todo acceso a la conexión compartida se
@@ -65,6 +66,10 @@ public class PrestamoDAOImpl implements PrestamoDAO {
              ORDER BY veces DESC, l.titulo
             """;
 
+    /** Texto para el usuario si el estudiante o el libro se borraron mientras se prestaba. */
+    private static final Map<Integer, String> SI_FALLA_PRESTAR =
+            Map.of(ErroresSql.REFERENCIA_INEXISTENTE, "El estudiante o el libro ya no existe.");
+
     private final DatabaseConnection db = DatabaseConnection.getInstance();
 
     @Override
@@ -96,7 +101,7 @@ public class PrestamoDAOImpl implements PrestamoDAO {
                     restaurarAutoCommit(conexion);
                 }
             } catch (SQLException e) {
-                throw ErroresSql.traducir("No se pudo registrar el préstamo.", e);
+                throw ErroresSql.traducir("No se pudo registrar el préstamo.", e, SI_FALLA_PRESTAR);
             }
         }
     }

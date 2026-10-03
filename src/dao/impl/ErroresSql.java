@@ -1,23 +1,27 @@
 package dao.impl;
 
 import dao.PersistenciaException;
+import dao.RestriccionException;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Traduce las {@link SQLException} de MySQL a {@link PersistenciaException} con un mensaje
- * claro según el código de error. Es el único lugar que conoce esos códigos.
+ * claro según el código de error. Si el error es una regla de los datos (duplicado, registros
+ * asociados, referencia inexistente, CHECK), devuelve una {@link RestriccionException}.
+ * Cada DAO puede aportar un texto específico por código; si no, se usa el genérico.
  */
 final class ErroresSql {
 
     /** No se puede borrar la fila: otra tabla la referencia por clave foránea. */
-    private static final int FILA_REFERENCIADA = 1451;
+    static final int FILA_REFERENCIADA = 1451;
     /** La fila apunta a un registro que no existe. */
-    private static final int REFERENCIA_INEXISTENTE = 1452;
+    static final int REFERENCIA_INEXISTENTE = 1452;
     /** Se violó una restricción UNIQUE o PRIMARY KEY. */
-    private static final int DUPLICADO = 1062;
+    static final int DUPLICADO = 1062;
     /** Se violó una restricción CHECK (por ejemplo, stock negativo). */
-    private static final int CHECK_VIOLADO = 3819;
+    static final int CHECK_VIOLADO = 3819;
     /** El servidor rechazó el usuario o la contraseña. */
     private static final int ACCESO_DENEGADO = 1045;
     /** La base de datos indicada en la URL no existe. */
@@ -34,7 +38,30 @@ final class ErroresSql {
      * @return la excepción lista para lanzar con {@code throw ErroresSql.traducir(...)}.
      */
     static PersistenciaException traducir(String contexto, SQLException causa) {
-        return new PersistenciaException(contexto + " " + motivo(causa), causa);
+        return traducir(contexto, causa, Map.of());
+    }
+
+    /**
+     * @param especificos texto para el usuario según el código de error, p. ej.
+     *                    {@code Map.of(DUPLICADO, "Ya existe una categoría con ese nombre.")};
+     *                    los códigos que no estén usan el texto genérico.
+     * @return una {@link RestriccionException} si el error es una regla de los datos;
+     *         si no, una {@link PersistenciaException}.
+     */
+    static PersistenciaException traducir(String contexto, SQLException causa, Map<Integer, String> especificos) {
+        String motivo = especificos.getOrDefault(causa.getErrorCode(), motivo(causa));
+        String mensaje = contexto + " " + motivo;
+        return esRestriccion(causa)
+                ? new RestriccionException(mensaje, causa)
+                : new PersistenciaException(mensaje, causa);
+    }
+
+    /** @return {@code true} si la BD rechazó los datos por una regla, no por una falla técnica. */
+    private static boolean esRestriccion(SQLException e) {
+        return switch (e.getErrorCode()) {
+            case DUPLICADO, FILA_REFERENCIADA, REFERENCIA_INEXISTENTE, CHECK_VIOLADO -> true;
+            default -> false;
+        };
     }
 
     private static String motivo(SQLException e) {
