@@ -127,7 +127,7 @@ cd biblioteca-escolar-java-mysql
 ---
 
 **Repositorio GitHub:** https://github.com/Psmithortiz/biblioteca-escolar-java-mysql
-**Fecha de entrega:** _DD/10/2026_
+**Fecha de entrega:** _11/10/2026_
 
 ---
 
